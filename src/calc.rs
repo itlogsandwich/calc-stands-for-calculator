@@ -1,0 +1,63 @@
+use serde::{ Serialize, Deserialize };
+use std::sync::{ Arc, Mutex };
+pub enum Operations
+{
+    Add,
+    Subtract,
+    Multiply,
+    Divide,
+}
+
+#[derive(Clone)]
+pub struct CalcState
+{
+    pub solved: String
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct CalcRequest
+{
+    pub expression: String
+}
+
+pub async fn create_app(state: CalcState) -> axum::Router
+{
+    axum::Router::new()
+        .route("/", axum::routing::get(index))
+        .route("/add", axum::routing::get(solve_expression))
+        .with_state(state)
+}
+
+async fn index() -> impl axum::response::IntoResponse
+{
+    println!("---> {:<12} - index - ", "HANDLER");
+
+    let template = crate::templates::IndexTemplate { expression: String::from("Hello, World! This is my Calculator") };
+    crate::templates::HtmlTemplate(template)
+}
+
+#[axum::debug_handler]
+async fn solve_expression(
+    axum::extract::State(state): axum::extract::State<CalcState>,
+    // axum::Form(payload): axum::Form<CalcRequest>,
+) -> impl axum::response::IntoResponse
+{
+    println!("---> {:<12} - add_expression ", "HANDLER");
+    
+    let mut default_val: f64 = 0.0;
+    let default_opr = String::from("+");
+    
+    // let vec: Vec<&str> = payload.expression.split("+").collect();
+    // let vec = Vec::<f64>::from([5.0,10.0,16.0]);
+    let vec= "10+20+30".split("+").collect::<Vec<&str>>();
+
+    for x in vec
+    {
+        // default_val += x.parse::<f64>().unwrap();
+        default_val += x.parse::<f64>().unwrap();
+    }
+
+    let template = crate::templates::TestTemplate { expression: default_val.to_string() };
+    crate::templates::HtmlTemplate(template) 
+}
+
