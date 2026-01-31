@@ -25,6 +25,7 @@ pub async fn create_app(state: CalcState) -> axum::Router
     axum::Router::new()
         .route("/", axum::routing::get(index))
         .route("/add", axum::routing::get(solve_expression))
+        .fallback_service(tower_http::services::ServeDir::new("assets"))
         .with_state(state)
 }
 
@@ -32,7 +33,16 @@ async fn index() -> impl axum::response::IntoResponse
 {
     println!("---> {:<12} - index - ", "HANDLER");
 
-    let template = crate::templates::IndexTemplate { expression: String::from("Hello, World! This is my Calculator") };
+    let template = crate::templates::IndexTemplate 
+    { 
+        calc_input: vec![
+            "C", "()", "%", "/",
+            "7", "8", "9", "*",
+            "4", "5", "6", "-",
+            "1", "2", "3", "+",
+            ".", "0", ".", "=",
+        ]
+    };
     crate::templates::HtmlTemplate(template)
 }
 
@@ -57,7 +67,16 @@ async fn solve_expression(
         default_val += x.parse::<f64>().unwrap();
     }
 
-    let template = crate::templates::TestTemplate { expression: default_val.to_string() };
+    let template = crate::templates::IndexTemplate 
+    { 
+        calc_input: vec![
+            "C", "()", "%", "/",
+            "7", "8", "9", "*",
+            "4", "5", "6", "-",
+            "1", "2", "3", "+",
+            ".", "0", ".", "=",
+        ]
+    };
     crate::templates::HtmlTemplate(template) 
 }
 

@@ -4,14 +4,14 @@ use askama::Template;
 #[template(path = "index.html")]
 pub struct IndexTemplate
 {
-    pub expression: String,
+    pub calc_input: Vec<&'static str>
 }
 
 #[derive(Template)]
-#[template(path = "test.html")]
-pub struct TestTemplate
+#[template(path = "components/screen.html")]
+pub struct ScreenTemplate
 {
-    pub expression: String,
+        
 }
 
 pub struct HtmlTemplate<T>(pub T);
