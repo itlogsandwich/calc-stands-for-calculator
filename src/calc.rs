@@ -1,5 +1,7 @@
 use serde::{ Serialize, Deserialize };
 use std::sync::{ Arc, Mutex };
+
+type CalcResult<T> = Result<T, crate::error::CalcError>;
 pub enum Operations
 {
     Add,
@@ -10,8 +12,8 @@ pub enum Operations
 
 #[derive(Clone)]
 pub struct CalcState
-{
-    pub solved: String
+{   
+    pub expression: Arc<Mutex<Vec<&'static str>>>
 }
 
 #[derive(Serialize, Deserialize)]
@@ -29,7 +31,9 @@ pub async fn create_app(state: CalcState) -> axum::Router
         .with_state(state)
 }
 
-async fn index() -> impl axum::response::IntoResponse
+async fn index(
+    axum::extract::State(state): axum::extract::State<CalcState>,
+) -> CalcResult<impl axum::response::IntoResponse>
 {
     println!("---> {:<12} - index - ", "HANDLER");
 
@@ -41,16 +45,17 @@ async fn index() -> impl axum::response::IntoResponse
             "4", "5", "6", "-",
             "1", "2", "3", "+",
             ".", "0", ".", "=",
-        ]
+        ],
+
+        screen_content: state.expression.lock().unwrap().to_vec()
     };
-    crate::templates::HtmlTemplate(template)
+    Ok(crate::templates::HtmlTemplate(template))
 }
 
-#[axum::debug_handler]
 async fn solve_expression(
     axum::extract::State(state): axum::extract::State<CalcState>,
     // axum::Form(payload): axum::Form<CalcRequest>,
-) -> impl axum::response::IntoResponse
+) -> CalcResult<impl axum::response::IntoResponse>
 {
     println!("---> {:<12} - add_expression ", "HANDLER");
     
@@ -75,8 +80,10 @@ async fn solve_expression(
             "4", "5", "6", "-",
             "1", "2", "3", "+",
             ".", "0", ".", "=",
-        ]
+        ],
+
+        screen_content: state.expression.lock().unwrap().to_vec()
     };
-    crate::templates::HtmlTemplate(template) 
+    Ok(crate::templates::HtmlTemplate(template))
 }
 

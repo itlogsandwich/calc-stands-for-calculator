@@ -2,16 +2,11 @@ use askama::Template;
 
 #[derive(Template)]
 #[template(path = "index.html")]
+
 pub struct IndexTemplate
 {
-    pub calc_input: Vec<&'static str>
-}
-
-#[derive(Template)]
-#[template(path = "components/screen.html")]
-pub struct ScreenTemplate
-{
-        
+    pub calc_input: Vec<&'static str>,
+    pub screen_content: Vec<&'static str>
 }
 
 pub struct HtmlTemplate<T>(pub T);
