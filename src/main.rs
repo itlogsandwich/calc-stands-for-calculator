@@ -9,10 +9,9 @@ async fn main() -> Result<(), crate::error::CalcError>
 {
     let state = crate::calc::CalcState 
     {
-        expression: Arc::new(Mutex::new(Vec::new()))
+        expressions: Arc::new(Mutex::new(Vec::new()))
     };
 
-    state.expression.lock().unwrap().push(" ");
     let app = crate::calc::create_app(state).await;
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:6969")

@@ -1,3 +1,3 @@
-<button class = " bg-gray-200 border rounded-lg" type="button" hx-trigger = "click" hx-target = "#calc-screen" hx-vals = '{"key": "{{val}}"}' >
+<button class = " bg-gray-200 p-4 w-full h-16 border rounded-lg hover:bg-black hover:border-red-500" type="button" hx-target = "#calc-screen" hx-vals = '{"expression": "{{val}}"}' hx-post = "/display" hx-swap = "textContent">
   {{val}}
 </button>

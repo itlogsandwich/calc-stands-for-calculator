@@ -13,7 +13,7 @@ pub enum Operations
 #[derive(Clone)]
 pub struct CalcState
 {   
-    pub expression: Arc<Mutex<Vec<&'static str>>>
+    pub expressions: Arc<Mutex<Vec<String>>>
 }
 
 #[derive(Serialize, Deserialize)]
@@ -27,6 +27,7 @@ pub async fn create_app(state: CalcState) -> axum::Router
     axum::Router::new()
         .route("/", axum::routing::get(index))
         .route("/add", axum::routing::get(solve_expression))
+        .route("/display", axum::routing::post(display_expression))
         .fallback_service(tower_http::services::ServeDir::new("assets"))
         .with_state(state)
 }
@@ -47,8 +48,26 @@ async fn index(
             ".", "0", ".", "=",
         ],
 
-        screen_content: state.expression.lock().unwrap().to_vec()
+        screen_content: state.expressions.lock().unwrap().to_vec()
     };
+    Ok(crate::templates::HtmlTemplate(template))
+}
+
+async fn display_expression(
+    axum::extract::State(state): axum::extract::State<CalcState>,
+    axum::extract::Form(payload): axum::Form<CalcRequest>, 
+) -> CalcResult<impl axum::response::IntoResponse>
+{
+    println!("---> {:<12} - display_expression ", "HANDLER");
+
+    let mut expressions = state.expressions.lock().unwrap();
+
+    expressions.push(payload.expression);
+    let template = crate::templates::ScreenTemplate 
+    { 
+        screen_content: expressions.to_vec()
+    };
+
     Ok(crate::templates::HtmlTemplate(template))
 }
 
@@ -82,7 +101,7 @@ async fn solve_expression(
             ".", "0", ".", "=",
         ],
 
-        screen_content: state.expression.lock().unwrap().to_vec()
+        screen_content: state.expressions.lock().unwrap().to_vec()
     };
     Ok(crate::templates::HtmlTemplate(template))
 }
