@@ -8,6 +8,7 @@ pub enum Operations
     Subtract,
     Multiply,
     Divide,
+    NoneFound,
 }
 
 #[derive(Clone)]
@@ -116,8 +117,19 @@ async fn solve_expression(
         }
         continue
     }
-    let solved_expr = expr_one.parse::<i64>()? + expr_two.parse::<i64>()?;
-    println!("{solved_expr}");
+
+    let sign = expressions.get(operator).unwrap();
+
+    let operation = get_operation(sign.to_string())?;
+
+    let solved_expr = match operation
+    {
+        Operations::Add => expr_one.parse::<i64>()? + expr_two.parse::<i64>()?,
+        Operations::Subtract => expr_one.parse::<i64>()? - expr_two.parse::<i64>()?,
+        Operations::Multiply => expr_one.parse::<i64>()? * expr_two.parse::<i64>()?,
+        Operations::Divide => expr_one.parse::<i64>()? / expr_two.parse::<i64>()?,
+        Operations::NoneFound=> 0,
+    };
 
     expressions.clear();
 
@@ -129,5 +141,17 @@ async fn solve_expression(
     };
 
     Ok(crate::templates::HtmlTemplate(template))
+}
+
+fn get_operation(sign: String) -> CalcResult<Operations>
+{
+    Ok(match sign.as_str() 
+    {
+        "+" => Operations::Add,
+        "-" => Operations::Subtract,
+        "*" => Operations::Multiply,
+        "/" => Operations::Divide,
+        _ => Operations::NoneFound,
+    })
 }
 
