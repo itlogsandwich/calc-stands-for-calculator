@@ -1,3 +1,9 @@
-<button class = " bg-gray-200 p-4 w-full h-16 border rounded-lg hover:bg-black hover:border-red-500" type="button" hx-target = "#calc-screen" hx-vals = '{"expression": "{{val}}"}' hx-post = "/display" hx-swap = "textContent">
-  {{val}}
-</button>
+{% if val == "C" %}
+  <button class = " bg-gray-200 p-4 w-full h-16 border rounded-lg hover:bg-black hover:border-red-500" type="button" hx-target = "#calc-screen" hx-vals = '{"expression": "{{val}}"}' hx-post = "/clear">
+    {{val}}
+  </button>
+{% else %}
+  <button class = " bg-gray-200 p-4 w-full h-16 border rounded-lg hover:bg-black hover:border-red-500" type="button" hx-target = "#calc-screen" hx-vals = '{"expression": "{{val}}"}' hx-post = "/display">
+    {{val}}
+  </button>
+{% endif %}

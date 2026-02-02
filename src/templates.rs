@@ -4,7 +4,7 @@ use askama::Template;
 #[template(path = "index.html")]
 pub struct IndexTemplate
 {
-    pub calc_input: Vec<&'static str>,
+    pub calc_input: Vec<String>,
     pub screen_content: Vec<String>
 }
 

@@ -28,6 +28,7 @@ pub async fn create_app(state: CalcState) -> axum::Router
         .route("/", axum::routing::get(index))
         .route("/add", axum::routing::get(solve_expression))
         .route("/display", axum::routing::post(display_expression))
+        .route("/clear", axum::routing::post(clear_display))
         .fallback_service(tower_http::services::ServeDir::new("assets"))
         .with_state(state)
 }
@@ -41,11 +42,11 @@ async fn index(
     let template = crate::templates::IndexTemplate 
     { 
         calc_input: vec![
-            "C", "()", "%", "/",
-            "7", "8", "9", "*",
-            "4", "5", "6", "-",
-            "1", "2", "3", "+",
-            ".", "0", ".", "=",
+            "C".to_string(), "()".to_string(), "%".to_string(), "/".to_string(),
+            "7".to_string(), "8".to_string(), "9".to_string(), "*".to_string(),
+            "4".to_string(), "5".to_string(), "6".to_string(), "-".to_string(),
+            "1".to_string(), "2".to_string(), "3".to_string(), "+".to_string(),
+            ".".to_string(), "0".to_string(), ".".to_string(), "=".to_string(),
         ],
 
         screen_content: state.expressions.lock().unwrap().to_vec()
@@ -63,6 +64,24 @@ async fn display_expression(
     let mut expressions = state.expressions.lock().unwrap();
 
     expressions.push(payload.expression);
+    let template = crate::templates::ScreenTemplate 
+    { 
+        screen_content: expressions.to_vec()
+    };
+
+    Ok(crate::templates::HtmlTemplate(template))
+}
+
+async fn clear_display(
+    axum::extract::State(state): axum::extract::State<CalcState>,
+) -> CalcResult<impl axum::response::IntoResponse>
+{
+    println!("---> {:<12} - display_expression ", "HANDLER");
+
+    let mut expressions = state.expressions.lock().unwrap();
+
+    expressions.clear();
+
     let template = crate::templates::ScreenTemplate 
     { 
         screen_content: expressions.to_vec()
@@ -94,11 +113,11 @@ async fn solve_expression(
     let template = crate::templates::IndexTemplate 
     { 
         calc_input: vec![
-            "C", "()", "%", "/",
-            "7", "8", "9", "*",
-            "4", "5", "6", "-",
-            "1", "2", "3", "+",
-            ".", "0", ".", "=",
+            "C".to_string(), "()".to_string(), "%".to_string(), "/".to_string(),
+            "7".to_string(), "8".to_string(), "9".to_string(), "*".to_string(),
+            "4".to_string(), "5".to_string(), "6".to_string(), "-".to_string(),
+            "1".to_string(), "2".to_string(), "3".to_string(), "+".to_string(),
+            ".".to_string(), "0".to_string(), ".".to_string(), "=".to_string(),
         ],
 
         screen_content: state.expressions.lock().unwrap().to_vec()
