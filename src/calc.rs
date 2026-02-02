@@ -26,7 +26,7 @@ pub async fn create_app(state: CalcState) -> axum::Router
 {
     axum::Router::new()
         .route("/", axum::routing::get(index))
-        .route("/solve", axum::routing::get(solve_expression))
+        .route("/solve", axum::routing::post(solve_expression))
         .route("/display", axum::routing::post(display_expression))
         .route("/clear", axum::routing::post(clear_display))
         .fallback_service(tower_http::services::ServeDir::new("assets"))
@@ -96,16 +96,38 @@ async fn solve_expression(
 {
     println!("---> {:<12} - add_expression ", "HANDLER");
 
-    let expressions = state.expressions.lock().unwrap();
-    
-    let operator = expressions.iter()
-        .position(|opr| opr == "+" || opr == "-" || opr == "*" || opr == "/");
+    let mut expressions = state.expressions.lock().unwrap();
 
+    let mut expr_one = String::new();
+    let mut expr_two = String::new();
+    
+    let operator= expressions.iter()
+        .position(|opr| opr == "+" || opr == "-" || opr == "*" || opr == "/").unwrap();
+
+    for (index, val) in expressions.iter().enumerate()
+    {
+        if index != operator && index < operator
+        {
+            expr_one.push_str(val);
+        }
+        else if index != operator && index > operator
+        {
+            expr_two.push_str(val);     
+        }
+        continue
+    }
+    let solved_expr = expr_one.parse::<i64>()? + expr_two.parse::<i64>()?;
+    println!("{solved_expr}");
+
+    expressions.clear();
+
+    expressions.push(solved_expr.to_string());
 
     let template = crate::templates::ScreenTemplate 
     { 
-        screen_content: state.expressions.lock().unwrap().to_vec()
+        screen_content: expressions.to_vec()
     };
+
     Ok(crate::templates::HtmlTemplate(template))
 }
 

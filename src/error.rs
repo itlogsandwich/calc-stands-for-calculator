@@ -1,3 +1,5 @@
+use std::num::ParseIntError;
+
 use axum::Json;
 use axum::http::{ StatusCode, Error as AxumError };
 use serde_json::json;
@@ -6,6 +8,8 @@ use serde_json::json;
 pub enum CalcError
 {
     InternalServer(String),
+    CalculationMishap,
+    ParsingFailed,
 }
 
 impl axum::response::IntoResponse for CalcError
@@ -15,6 +19,8 @@ impl axum::response::IntoResponse for CalcError
         let(status, error_message) = match self
         {
             Self::InternalServer(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
+            Self::CalculationMishap => (StatusCode::BAD_REQUEST, String::from("An error handling the input")),
+            Self::ParsingFailed => (StatusCode::INTERNAL_SERVER_ERROR, String::from("Failed to parse data")),
         };
 
         let body = Json(json!(
@@ -24,6 +30,14 @@ impl axum::response::IntoResponse for CalcError
         ));
 
         (status, body).into_response()
+    }
+}
+
+impl From<ParseIntError> for CalcError
+{
+    fn from(err: ParseIntError) -> Self 
+    {
+        Self::ParsingFailed     
     }
 }
 
