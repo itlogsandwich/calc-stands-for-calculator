@@ -26,7 +26,7 @@ pub async fn create_app(state: CalcState) -> axum::Router
 {
     axum::Router::new()
         .route("/", axum::routing::get(index))
-        .route("/add", axum::routing::get(solve_expression))
+        .route("/solve", axum::routing::get(solve_expression))
         .route("/display", axum::routing::post(display_expression))
         .route("/clear", axum::routing::post(clear_display))
         .fallback_service(tower_http::services::ServeDir::new("assets"))
@@ -92,34 +92,18 @@ async fn clear_display(
 
 async fn solve_expression(
     axum::extract::State(state): axum::extract::State<CalcState>,
-    // axum::Form(payload): axum::Form<CalcRequest>,
 ) -> CalcResult<impl axum::response::IntoResponse>
 {
     println!("---> {:<12} - add_expression ", "HANDLER");
-    
-    let mut default_val: f64 = 0.0;
-    let default_opr = String::from("+");
-    
-    // let vec: Vec<&str> = payload.expression.split("+").collect();
-    // let vec = Vec::<f64>::from([5.0,10.0,16.0]);
-    let vec= "10+20+30".split("+").collect::<Vec<&str>>();
 
-    for x in vec
-    {
-        // default_val += x.parse::<f64>().unwrap();
-        default_val += x.parse::<f64>().unwrap();
-    }
+    let expressions = state.expressions.lock().unwrap();
+    
+    let operator = expressions.iter()
+        .position(|opr| opr == "+" || opr == "-" || opr == "*" || opr == "/");
 
-    let template = crate::templates::IndexTemplate 
+
+    let template = crate::templates::ScreenTemplate 
     { 
-        calc_input: vec![
-            "C".to_string(), "()".to_string(), "%".to_string(), "/".to_string(),
-            "7".to_string(), "8".to_string(), "9".to_string(), "*".to_string(),
-            "4".to_string(), "5".to_string(), "6".to_string(), "-".to_string(),
-            "1".to_string(), "2".to_string(), "3".to_string(), "+".to_string(),
-            ".".to_string(), "0".to_string(), ".".to_string(), "=".to_string(),
-        ],
-
         screen_content: state.expressions.lock().unwrap().to_vec()
     };
     Ok(crate::templates::HtmlTemplate(template))
