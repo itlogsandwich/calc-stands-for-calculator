@@ -8,7 +8,6 @@ use serde_json::json;
 pub enum CalcError
 {
     InternalServer(String),
-    CalculationMishap,
     ParsingFailed,
 }
 
@@ -19,7 +18,6 @@ impl axum::response::IntoResponse for CalcError
         let(status, error_message) = match self
         {
             Self::InternalServer(msg) => (StatusCode::INTERNAL_SERVER_ERROR, msg),
-            Self::CalculationMishap => (StatusCode::BAD_REQUEST, String::from("An error handling the input")),
             Self::ParsingFailed => (StatusCode::INTERNAL_SERVER_ERROR, String::from("Failed to parse data")),
         };
 
@@ -35,7 +33,7 @@ impl axum::response::IntoResponse for CalcError
 
 impl From<ParseIntError> for CalcError
 {
-    fn from(err: ParseIntError) -> Self 
+    fn from(_err: ParseIntError) -> Self 
     {
         Self::ParsingFailed     
     }

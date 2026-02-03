@@ -2,6 +2,8 @@ use serde::{ Serialize, Deserialize };
 use std::sync::{ Arc, Mutex };
 
 type CalcResult<T> = Result<T, crate::error::CalcError>;
+
+#[derive(Debug)]
 pub enum Operations
 {
     Add,
@@ -99,42 +101,37 @@ async fn solve_expression(
 
     let mut expressions = state.expressions.lock().unwrap();
 
-    let mut expr_one = String::new();
-    let mut expr_two = String::new();
     
-    let operator= expressions.iter()
+    
+    let mut solved_expr: i64 = 0;
+    let mut operation = Operations::Add;
+
+    let mut operator = expressions.iter()
         .position(|opr| opr == "+" || opr == "-" || opr == "*" || opr == "/").unwrap();
 
     for (index, val) in expressions.iter().enumerate()
     {
-        if index != operator && index < operator
+        if index == operator 
         {
-            expr_one.push_str(val);
+            continue;
         }
-        else if index != operator && index > operator
+
+        solved_expr = match operation
         {
-            expr_two.push_str(val);     
-        }
-        continue
+            Operations::Add => solved_expr + val.parse::<i64>()?,
+            Operations::Subtract => solved_expr - val.parse::<i64>()?,
+            Operations::Multiply => solved_expr * val.parse::<i64>()?,
+            Operations::Divide => solved_expr / val.parse::<i64>()?,
+            Operations::NoneFound=> 0,
+        };
+
+        let sign = expressions.get(operator).unwrap();
+        operation = get_operation(sign.to_string())?;
     }
-
-    let sign = expressions.get(operator).unwrap();
-
-    let operation = get_operation(sign.to_string())?;
-
-    let solved_expr = match operation
-    {
-        Operations::Add => expr_one.parse::<i64>()? + expr_two.parse::<i64>()?,
-        Operations::Subtract => expr_one.parse::<i64>()? - expr_two.parse::<i64>()?,
-        Operations::Multiply => expr_one.parse::<i64>()? * expr_two.parse::<i64>()?,
-        Operations::Divide => expr_one.parse::<i64>()? / expr_two.parse::<i64>()?,
-        Operations::NoneFound=> 0,
-    };
 
     expressions.clear();
 
     expressions.push(solved_expr.to_string());
-
     let template = crate::templates::ScreenTemplate 
     { 
         screen_content: expressions.to_vec()
