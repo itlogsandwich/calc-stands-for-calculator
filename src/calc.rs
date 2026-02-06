@@ -101,43 +101,73 @@ async fn solve_expression(
 
     let mut expressions = state.expressions.lock().unwrap();
 
+    let mut tokens: Vec<String> = Vec::new();
+    let mut current_number = String::new();
     
-    
-    let mut solved_expr: i64 = 0;
-    let mut operation = Operations::Add;
-
-    let mut operator = expressions.iter()
-        .position(|opr| opr == "+" || opr == "-" || opr == "*" || opr == "/").unwrap();
-
-    for (index, val) in expressions.iter().enumerate()
+    for char in expressions.iter()
     {
-        if index == operator 
+        if is_operator(char)
         {
-            continue;
+            if !current_number.is_empty()
+            {
+                tokens.push(current_number.clone());
+                current_number.clear();
+            }
+            tokens.push(char.to_string());
         }
-
-        solved_expr = match operation
+        else
         {
-            Operations::Add => solved_expr + val.parse::<i64>()?,
-            Operations::Subtract => solved_expr - val.parse::<i64>()?,
-            Operations::Multiply => solved_expr * val.parse::<i64>()?,
-            Operations::Divide => solved_expr / val.parse::<i64>()?,
-            Operations::NoneFound=> 0,
-        };
-
-        let sign = expressions.get(operator).unwrap();
-        operation = get_operation(sign.to_string())?;
+            current_number.push_str(char);
+        }
     }
 
-    expressions.clear();
+    if !current_number.is_empty()
+    {
+        tokens.push(current_number);        
+    }
 
-    expressions.push(solved_expr.to_string());
+    let mut iterator = tokens.iter();
+    
+    let first_token = iterator.next().unwrap();
+
+    let mut result: i64 = first_token.parse::<i64>()?;
+
+    while let Some(op_str) = iterator.next()
+    {
+        if let Some(num_str) = iterator.next() 
+        {
+            let num: i64 = num_str.parse::<i64>()?;
+            let op = get_operation(op_str.to_string())?;
+
+            result = match op 
+            {
+                Operations::Add => result + num,
+                Operations::Subtract => result - num,
+                Operations::Multiply => result * num,
+                Operations::Divide => 
+                {
+                    if num == 0 { 0 } 
+                    else { result / num }
+                },
+                Operations::NoneFound => result,
+            };
+        }
+    }
+
+
+    expressions.clear();
+    expressions.push(result.to_string());
     let template = crate::templates::ScreenTemplate 
     { 
         screen_content: expressions.to_vec()
     };
 
     Ok(crate::templates::HtmlTemplate(template))
+}
+
+fn is_operator(val: &str) -> bool
+{
+    matches!(val, "+" | "-" | "*" | "/") 
 }
 
 fn get_operation(sign: String) -> CalcResult<Operations>
