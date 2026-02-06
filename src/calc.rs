@@ -97,7 +97,7 @@ async fn solve_expression(
     axum::extract::State(state): axum::extract::State<CalcState>,
 ) -> CalcResult<impl axum::response::IntoResponse>
 {
-    println!("---> {:<12} - add_expression ", "HANDLER");
+    println!("---> {:<12} - solve_expression ", "HANDLER");
 
     let mut expressions = state.expressions.lock().unwrap();
 
