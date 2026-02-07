@@ -32,6 +32,7 @@ pub async fn create_app(state: CalcState) -> axum::Router
         .route("/solve", axum::routing::post(solve_expression))
         .route("/display", axum::routing::post(display_expression))
         .route("/clear", axum::routing::post(clear_display))
+        .route("/clear-one", axum::routing::post(clear_one_display))
         .fallback_service(tower_http::services::ServeDir::new("assets"))
         .with_state(state)
 }
@@ -45,7 +46,7 @@ async fn index(
     let template = crate::templates::IndexTemplate 
     { 
         calc_input: vec![
-            "C".to_string(), "()".to_string(), "%".to_string(), "/".to_string(),
+            "CE".to_string(), "C".to_string(), "%".to_string(), "/".to_string(),
             "7".to_string(), "8".to_string(), "9".to_string(), "*".to_string(),
             "4".to_string(), "5".to_string(), "6".to_string(), "-".to_string(),
             "1".to_string(), "2".to_string(), "3".to_string(), "+".to_string(),
@@ -79,11 +80,29 @@ async fn clear_display(
     axum::extract::State(state): axum::extract::State<CalcState>,
 ) -> CalcResult<impl axum::response::IntoResponse>
 {
-    println!("---> {:<12} - display_expression ", "HANDLER");
+    println!("---> {:<12} - clear_all_expression ", "HANDLER");
 
     let mut expressions = state.expressions.lock().unwrap();
 
     expressions.clear();
+
+    let template = crate::templates::ScreenTemplate 
+    { 
+        screen_content: expressions.to_vec()
+    };
+
+    Ok(crate::templates::HtmlTemplate(template))
+}
+
+async fn clear_one_display(
+    axum::extract::State(state): axum::extract::State<CalcState>,
+) -> CalcResult<impl axum::response::IntoResponse>
+{
+    println!("---> {:<12} - clear_one ", "HANDLER");
+
+    let mut expressions = state.expressions.lock().unwrap();
+
+    expressions.pop();
 
     let template = crate::templates::ScreenTemplate 
     { 
@@ -130,13 +149,13 @@ async fn solve_expression(
     
     let first_token = iterator.next().unwrap();
 
-    let mut result: i64 = first_token.parse::<i64>()?;
+    let mut result: f64 = first_token.parse::<f64>()?;
 
     while let Some(op_str) = iterator.next()
     {
         if let Some(num_str) = iterator.next() 
         {
-            let num: i64 = num_str.parse::<i64>()?;
+            let num: f64 = num_str.parse::<f64>()?;
             let op = get_operation(op_str.to_string())?;
 
             result = match op 
@@ -146,14 +165,13 @@ async fn solve_expression(
                 Operations::Multiply => result * num,
                 Operations::Divide => 
                 {
-                    if num == 0 { 0 } 
+                    if num == 0.0 { 0.0 } 
                     else { result / num }
                 },
                 Operations::NoneFound => result,
             };
         }
     }
-
 
     expressions.clear();
     expressions.push(result.to_string());

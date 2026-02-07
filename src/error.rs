@@ -1,4 +1,4 @@
-use std::num::ParseIntError;
+use std::num::ParseFloatError;
 
 use axum::Json;
 use axum::http::{ StatusCode, Error as AxumError };
@@ -31,9 +31,9 @@ impl axum::response::IntoResponse for CalcError
     }
 }
 
-impl From<ParseIntError> for CalcError
+impl From<ParseFloatError> for CalcError
 {
-    fn from(_err: ParseIntError) -> Self 
+    fn from(_err: ParseFloatError) -> Self 
     {
         Self::ParsingFailed     
     }
