@@ -1,5 +1,5 @@
 {% if val == "CE" %}
-  <button class = "bg-gray-200 p-4 w-full h-16 border rounded-lg hover:bg-gray-400 hover:border-gray-900" type="button" hx-target = "#calc-screen" hx-vals = '{"expression": "{{val}}"}' hx-post = "/clear-one">
+  <button class = "bg-gray-200 p-4 w-full h-16 border rounded-lg" type="button" hx-target = "#calc-screen" hx-vals = '{"expression": "{{val}}"}' hx-post = "/clear-one">
     {{val}}
   </button>
 {% else if val == "C" %}

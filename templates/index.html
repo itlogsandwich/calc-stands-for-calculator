@@ -13,9 +13,7 @@
         CALC STANDS FOR CALCULATOR 
       </h1>
       <div class="w-full max-w-lg bg-gray-600 shadow-lg rounded-2xl p-8 border">
-        <section id = "screen-div">
-            {% include "components/screen.html" %}
-        </section>
+        {% include "components/screen.html" %}
         <section class = "grid grid-cols-4 gap-2">
           {% for val in calc_input %}
             {% include "components/calc_buttons.html" %}
