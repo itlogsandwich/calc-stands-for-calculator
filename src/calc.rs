@@ -33,6 +33,7 @@ pub async fn create_app(state: CalcState) -> axum::Router
         .route("/display", axum::routing::post(display_expression))
         .route("/clear", axum::routing::post(clear_display))
         .route("/clear-one", axum::routing::post(clear_one_display))
+        .route("/percentage", axum::routing::post(percentage_value))
         .fallback_service(tower_http::services::ServeDir::new("assets"))
         .with_state(state)
 }
@@ -60,10 +61,7 @@ async fn index(
 
 async fn display_expression(
     axum::extract::State(state): axum::extract::State<CalcState>,
-    axum::extract::Form(payload): axum::Form<CalcRequest>, 
-) -> CalcResult<impl axum::response::IntoResponse>
-{
-    println!("---> {:<12} - display_expression ", "HANDLER");
+    axum::extract::Form(payload): axum::Form<CalcRequest>, ) -> CalcResult<impl axum::response::IntoResponse> { println!("---> {:<12} - display_expression ", "HANDLER");
 
     let mut expressions = state.expressions.lock().unwrap();
 
@@ -103,6 +101,28 @@ async fn clear_one_display(
     let mut expressions = state.expressions.lock().unwrap();
 
     expressions.pop();
+
+    let template = crate::templates::ScreenTemplate 
+    { 
+        screen_content: expressions.to_vec()
+    };
+
+    Ok(crate::templates::HtmlTemplate(template))
+}
+
+async fn percentage_value(
+    axum::extract::State(state): axum::extract::State<CalcState>,
+) -> CalcResult<impl axum::response::IntoResponse>
+{
+    println!("---> {:<12} - percentage_value ", "HANDLER");
+
+    let mut expressions = state.expressions.lock().unwrap();
+
+    let val = expressions.iter().next().unwrap();
+    let result = val.parse::<f64>()? / 100.0;
+    
+    expressions.clear();
+    expressions.push(result.to_string());
 
     let template = crate::templates::ScreenTemplate 
     { 
