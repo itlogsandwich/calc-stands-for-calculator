@@ -2,7 +2,7 @@
 Calculator web app written in rust, askama, htmx, and tailwind.
 
 ## About
-Further exploring askama and htmx.
+A simple calculator meant to further improve my understanding of rust and relevant libraries.
 
 ## Quick Start
 ```
@@ -14,4 +14,4 @@ build the css, npx tailwindcss -i ./assets/input.css -o ./assets/output.css
 cargo run -r
 ```
 ## Appearance
-[W.I.P] I will probably do some design changes to make it look presentable
+<img width="577" height="637" alt="image" src="https://github.com/user-attachments/assets/91fec1f9-dfd2-4dd2-a49b-be8d7055ca5f" />
