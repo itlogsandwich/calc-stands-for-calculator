@@ -140,6 +140,17 @@ async fn solve_expression(
 
     let mut expressions = state.expressions.lock().unwrap();
 
+    if expressions.is_empty()
+    {
+        expressions.push("0".to_string());
+        let template = crate::templates::ScreenTemplate 
+        { 
+            screen_content: expressions.to_vec()
+        };
+
+        return Ok(crate::templates::HtmlTemplate(template));
+    }
+
     let mut tokens: Vec<String> = Vec::new();
     let mut current_number = String::new();
     
